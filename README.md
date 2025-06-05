@@ -1,4 +1,5 @@
 # openfabric_assignment
-this is a repo to answer the questions of the assignment for the post of quantitative trader at openfabric
+This repository is designed to address the questions of the assignment for the Quantitative Trader position at OpenFabric.
 
-I have name the files as q1, q2 and so on denoting the question that has been answered. 
+I have made folders for each question with all the solutions and supporting documents
+Thank you for this opportunity.
