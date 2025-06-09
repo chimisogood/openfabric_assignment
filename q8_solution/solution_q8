@@ -1,0 +1,44 @@
+Monitoring a Live AI Strategy in Production
+In production, my first priority is observability. I establish a comprehensive monitoring stack that includes:
+
+Metrics Collection: I log model decisions, state inputs, action probabilities (if stochastic), execution latency, and reward attribution. These are pushed to a time-series DB like Prometheus or InfluxDB.
+
+Live PnL Attribution: Realized/unrealized PnL is broken down by alpha source, order type (limit vs market), and latency band. I also tag fills with agent-generated vs rule-based override.
+
+Behavioral Fingerprinting: Every N steps, I checkpoint policy logits and Q-values across key states to detect drift. A sudden deviation from prior behavior triggers alerts.
+
+Visualization Layer: Grafana dashboards stream live metrics like fill ratio, win rate, adverse selection ratio, quote-to-trade latency, inventory skew, and exposure heatmaps.
+
+Anomaly Detection in Model Output or PnL
+Anomalies signal either environment shift or model degradation. I employ:
+
+Statistical Baselines: Rolling z-score and Mahalanobis distance are computed on key features: inventory trajectory, action entropy, and model confidence. I track this per-symbol and per-agent.
+
+PnL Decomposition: A sudden PnL drop is decomposed into execution slippage, model mispricing, or structural market shift (e.g., regime change detected via HMM or rolling kurtosis of midprice moves).
+
+Causal Graphs: For more complex models, I construct a causal DAG between agent features and decisions using Granger causality and local Shapley value approximations. Unexpected break in edges = red flag.
+
+Shadow Agent: I run a shadow policy trained offline on lagged data and compare its performance live with the production agent. Divergence in expected reward distributions helps catch overfitting or poor generalization.
+
+Real-time Risk Control Based on Volatility Spikes or Position Drift
+Risk is not a backend job — it's inline and continuous:
+
+Volatility Regimes: I compute microstructure-aware realized volatility (e.g., Parkinson or Garman-Klass) on tick or event-time windows. Spikes beyond a 95% historical quantile auto-trigger:
+
+Tighter quoting bands
+
+Cancellation of stale limit orders
+
+Switch to market-taking fallback policy if fill probability collapses
+
+Inventory Drift: Position vs target deviation is tracked with a soft threshold, beyond which a mean-reversion hedge order is placed. I compute a running Kelly-optimal position using forecasted Sharpe and dynamically clip it under stress.
+
+Circuit Breakers: Hard limits on:
+
+Max drawdown intraday (PnL-based halt)
+
+Max order rate per second (throttle bot)
+
+Max inventory notional (risk desk override)
+
+Action Sanitizers: Every action proposed by the agent passes through a final sanitizer layer that applies market impact cost estimation, checks regulatory constraints, and validates against risk limits.
