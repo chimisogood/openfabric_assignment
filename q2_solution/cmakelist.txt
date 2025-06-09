@@ -1,0 +1,19 @@
+ 
+cmake_minimum_required(VERSION 3.14)
+project(TickProject)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# --- Google Test ---
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+
+add_executable(run_tests tests.cpp)
+target_link_libraries(run_tests GTest::gtest_main)
+
+# --- Google Benchmark ---
+find_package(benchmark REQUIRED)
+
+add_executable(run_benchmarks benchmarks.cpp)
+target_link_libraries(run_benchmarks benchmark::benchmark_main)
