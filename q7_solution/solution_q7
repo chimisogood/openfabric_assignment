@@ -1,0 +1,52 @@
+1. You Basically Overfitted the Hell Out of It
+
+This is the big one. Your strategy didn't find a real signal. It just memorized the noise from your historical data. You curve-fit it so perfectly to the past that it has zero clue how to handle the future.
+
+    What it looks like: You have a dozen complex rules and perfectly tuned parameters (a 13-period RSI with a 4.7-day lookback, really?). You kept tweaking until the equity curve looked perfect.
+    How to diagnose it: That trainwreck of an out-of-sample result is the diagnosis. Your model is a one-trick pony that already performed its trick.
+    How to fix it:
+        Be Brutal with Out-of-Sample Data: Your holdout data is sacred. Never touch it, never peek at it, never optimize for it. If it fails on the out-of-sample data, the idea is dead. Move on.
+        Simplify Everything: Can you get 80% of the result with 20% of the rules? A simpler, dumber strategy that works out-of-sample is infinitely better than a complex one that doesn't.
+        Walk-Forward, Don't Just Backtest: This is non-negotiable. Optimize on a chunk of data, test it on the next unseen chunk, then slide the window forward and repeat. It's a much more honest picture of how it would actually perform.
+
+2. The Market Changed, Your Strategy Didn't
+
+The crypto market has moods. There's insane bull-mode, soul-crushing bear-mode, and that awful sideways crab-walk. Your strategy was probably a genius in one of those but a total degen in another. The in-sample period was a party; the out-of-sample was the hangover.
+
+    What it looks like: A trend-following strategy that killed it in a bull run gets chopped to pieces in a ranging market. A mean-reversion strategy that loved a crab market gets steamrolled by a breakout.
+    How to diagnose it: Look at the market conditions. Was your in-sample period all low-volatility and trending, while your out-of-sample was a chaotic mess? Plot volatility and price action for both periods. The difference will probably smack you in the face.
+    How to fix it:
+        Build for All Weather: Your strategy needs to either work in all market types or, more realistically, have a filter to turn itself off when the weather gets bad.
+        Map the Regimes: Identify different market states (e.g., using a simple volatility filter) and see how your strategy does in each. If it only works in one, that's not an edge; it's a bet on the weather.
+
+3. You Forgot About Fees and Slippage (The Silent Killers)
+
+Your backtest probably assumed your trades were free and instant. Newsflash: they're not. In the real world, fees will bleed you dry, and slippage—the difference between your expected price and your fill price—is a brutal tax on every trade, especially in a volatile market.
+
+    What it looks like: A high-frequency strategy that makes a tiny profit on hundreds of trades. In a backtest, it looks great. In reality, one round of fees and slippage per trade wipes out all the profit and then some.
+    How to diagnose it: Rerun your backtest, but this time, add in a conservative estimate for fees (e.g., 0.1% per trade) and slippage (e.g., 0.2% or more, depending on the asset's liquidity and your trade size). Watch that 2.0 Sharpe vanish.
+    How to fix it:
+        Model Realistic Costs: Your backtest needs to punish every single trade with fees and slippage. Be pessimistic.
+        Hunt for Bigger Moves: Your edge needs to be big enough to clear the transaction cost hurdle with room to spare. If your average profit per trade is smaller than your costs, you don't have a strategy.
+
+4. You Tortured the Data Until It Confessed
+
+Be honest. Did you test 100 different indicators, coins, and timeframes, and are now celebrating the one combination that worked? That's not finding an edge; that's just getting lucky once. You found a statistical fluke in a graveyard of failed backtests.
+
+    What it looks like: The logic for the strategy seems random and has no real economic intuition behind it. It works on ETH but not on BTC. It works on the 4-hour chart but not the 6-hour.
+    How to diagnose it: If you can't explain why your strategy should work in a simple sentence, you've probably just been data mining. Try it on a different coin you didn't test on. It will likely fail.
+    How to fix it:
+        Start with a Hypothesis: "I believe that during periods of high funding rates, price tends to revert to the mean." Test that idea. Don't just throw everything at the wall to see what sticks.
+        Log Everything: Keep a journal of all your failed tests. It will keep you humble and remind you that finding one winner among 100 losers doesn't mean you've found anything at all.
+
+5. Your Backtest Was Basically Cheating (Look-Ahead Bias)
+
+This one is sneaky. Your code might be accidentally using information from the future to make trades in the past. It's the number one way to build a fantasy PnL that is impossible to replicate.
+
+    What it looks like: The classic example is using a candle's closing price to decide to buy at the open of that same candle. You couldn't have known the closing price at the open. It's like having tomorrow's newspaper today.
+    How to diagnose it: Go through your code line by line. For every data point your strategy uses, ask yourself: "At this exact moment in time, would I have known this for sure?" Be paranoid about timestamps and data indexing.
+    How to fix it:
+        Lag Your Data: When making a decision at the open of Candle[i], you can only use data from Candle[i-1] and earlier.
+        Use an Event-Driven Backtester: These systems process data one tick or one bar at a time, making it much harder to accidentally cheat.
+
+The bottom line: The market doesn't care about your beautiful in-sample backtest. It's a harsh referee that exposes every flaw. Stop curve-fitting, respect market changes, account for every cost, be honest about your research process, and for God's sake, don't cheat. Fix these, and you might turn that 0.5 into something real.
