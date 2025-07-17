@@ -4,18 +4,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import datetime
 
-START_DATE = "2023-01-01"
-END_DATE = datetime.date.today().strftime("%Y-%m-%d")
-INITIAL_CAPITAL = 10000.0
-def get_stock_data(ticker):
-    data = yf.download(ticker, start=START_DATE, end=END_DATE, auto_adjust=True)
-    if isinstance(data.columns, pd.MultiIndex):
-        data.columns = [col[0] for col in data.columns]
+START_DATE = "2023-01-01" #limited the date for better visualization
+END_DATE = datetime.date.today().strftime("%Y-%m-%d") #bascially extracting today's date.
+INITIAL_CAPITAL = 10000.0 # fixing basic capital as for pair trading, as sometimes it needs sufficient capital. 
+
+def get_stock_data(ticker): # defining a function to get the data of the required stock
+    data = yf.download(ticker, start=START_DATE, end=END_DATE, auto_adjust=True) # using the Yahoo Finance library to directly scrape the data, important is autoadjust, where if a certain commodity has a stock split, historical data is adjusted, current share is shown 
+    if isinstance(data.columns, pd.MultiIndex): #only accesses the data if it is multi index and makes, in this case a tuple
+        data.columns = [col[0] for col in data.columns] # extracts the first element in the tuple, is of the form ('Stock_ticker' , 'Open')
     return data
 
 def sma_crossover(data, short=20, long=50):
-    data = data.copy()
-    data['SMA_Short'] = data['Close'].rolling(window=short).mean()
+    data = data.copy() # make a copy of the data that we got in the previous function 
+    data['SMA_Short'] = data['Close'].rolling(window=short).mean() # 
     data['SMA_Long'] = data['Close'].rolling(window=long).mean()
     data.dropna(inplace=True)
     data['Signal'] = 0
