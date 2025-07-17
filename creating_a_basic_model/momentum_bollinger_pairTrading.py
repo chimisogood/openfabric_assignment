@@ -8,11 +8,20 @@ START_DATE = "2023-01-01" #limited the date for better visualization
 END_DATE = datetime.date.today().strftime("%Y-%m-%d") #bascially extracting today's date.
 INITIAL_CAPITAL = 10000.0 # fixing basic capital as for pair trading, as sometimes it needs sufficient capital. 
 
-def get_stock_data(ticker): # defining a function to get the data of the required stock
-    data = yf.download(ticker, start=START_DATE, end=END_DATE, auto_adjust=True) # using the Yahoo Finance library to directly scrape the data, important is autoadjust, where if a certain commodity has a stock split, historical data is adjusted, current share is shown 
-    if isinstance(data.columns, pd.MultiIndex): #only accesses the data if it is multi index and makes, in this case a tuple
-        data.columns = [col[0] for col in data.columns] # extracts the first element in the tuple, is of the form ('Stock_ticker' , 'Open')
-    return data
+def get_stock_data(ticker, start, end):
+    try: # this is to handle exceptions when a wrong ticker is being used
+        data = yf.download(ticker, start=startingdate, end=enddate, auto_adjust=True) # ticker is scraped off of yfinance within the time bound stated and auto adjust is used to smoothe out things like stock splits 
+        if data.empty:
+            print(f"No data found for {ticker} in the specified date range.") # prints the ticker entered is wrong 
+            return None
+        if isinstance(data.columns, pd.MultiIndex):
+            data.columns = [col[0] for col in data.columns] # when you download the data it is usually in the form ('Close','TICKER') so we flatten it to just 'Close'
+        print(f"Successfully downloaded data for {ticker}.") 
+        # print("Downloaded data columns:", data.columns.tolist())
+        return data
+    except Exception as e: # this is for error handling 
+        print(f"Error downloading data for {ticker}: {e}") # shows error message if there is an error
+        return None
 
 def sma_crossover(data, short=20, long=50):
     data = data.copy() # make a copy of the data that we got in the previous function 
